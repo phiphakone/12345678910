@@ -31,8 +31,10 @@ service cloud.firestore {
         && request.resource.data.players.size() <= 12
         && request.resource.data.submittedAt == request.time;
 
-      // Student names and phone numbers must not be publicly readable.
-      allow read, update, delete: if false;
+      // Only the private Firebase Auth admin account can read personal data.
+      allow read: if request.auth != null
+        && request.auth.token.email == 'sports-admin@the-thao-quoc-khach.firebaseapp.com';
+      allow update, delete: if false;
     }
   }
 }
