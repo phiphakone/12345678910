@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /registrations/{registrationId} {
+      // Public form submissions only. Reads and edits stay private until an
+      // authenticated administrator rule is added.
+      allow create: if request.resource.data.keys().hasAll([
+          'cohort', 'sport', 'kind', 'teamName', 'coordinatorName',
+          'coordinatorPhone', 'players', 'submittedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'cohort', 'sport', 'kind', 'teamName', 'coordinatorName',
+          'coordinatorPhone', 'players', 'submittedAt'
+        ])
+        && request.resource.data.cohort in [
+          'ລຸ້ນ 11', 'ລຸ້ນ 12', 'ລຸ້ນ 13', 'ລຸ້ນ 14', 'ລຸ້ນ 15'
+        ]
+        && request.resource.data.sport in [
+          'ເຕະຕໍ້', 'ຕີດອກ', 'ບານເຕະ', 'ຕີບານ'
+        ]
+        && request.resource.data.kind in ['ທີມຊາຍ', 'ທີມຍິງ']
+        && request.resource.data.teamName is string
+        && request.resource.data.teamName.size() > 0
+        && request.resource.data.teamName.size() <= 80
+        && request.resource.data.coordinatorName is string
+        && request.resource.data.coordinatorName.size() <= 80
+        && request.resource.data.coordinatorPhone is string
+        && request.resource.data.coordinatorPhone.size() <= 40
+        && request.resource.data.players is list
+        && request.resource.data.players.size() >= 2
+        && request.resource.data.players.size() <= 12
+        && request.resource.data.submittedAt == request.time;
+
+      // Student names and phone numbers must not be publicly readable.
+      allow read, update, delete: if false;
+    }
+  }
+}
